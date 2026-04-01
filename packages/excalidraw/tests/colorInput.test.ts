@@ -1,4 +1,8 @@
-import { normalizeInputColor } from "@excalidraw/common";
+import {
+  getHexColorValidationError,
+  normalizeInputColor,
+  sanitizeHexColorInput,
+} from "@excalidraw/common";
 
 describe("normalizeInputColor", () => {
   describe("hex colors", () => {
@@ -110,5 +114,43 @@ describe("normalizeInputColor", () => {
       expect(normalizeInputColor("#ff")).toBe(null);
       expect(normalizeInputColor("rgb(")).toBe(null);
     });
+  });
+});
+
+describe("getHexColorValidationError", () => {
+  it("returns null for valid hex values", () => {
+    expect(getHexColorValidationError("fff")).toBe(null);
+    expect(getHexColorValidationError("#ffff")).toBe(null);
+    expect(getHexColorValidationError("ff0000")).toBe(null);
+    expect(getHexColorValidationError("#ff000080")).toBe(null);
+  });
+
+  it("returns invalidLength for unsupported lengths", () => {
+    expect(getHexColorValidationError("ff")).toBe("invalidLength");
+    expect(getHexColorValidationError("fffff")).toBe("invalidLength");
+    expect(getHexColorValidationError("fffffffff")).toBe("invalidLength");
+  });
+
+  it("returns invalidCharacters for bad hex chars", () => {
+    expect(getHexColorValidationError("#12xz")).toBe("invalidCharacters");
+    expect(getHexColorValidationError("ggg")).toBe("invalidCharacters");
+  });
+
+  it("accepts values with extra #", () => {
+    expect(getHexColorValidationError("##ff0000")).toBe(null);
+  });
+
+  it("accepts values with spaces and tabs", () => {
+    expect(getHexColorValidationError(" f f 0\t0 0 0 ")).toBe(null);
+  });
+});
+
+describe("sanitizeHexColorInput", () => {
+  it("removes all # before validation", () => {
+    expect(sanitizeHexColorInput("##ff0000")).toBe("ff0000");
+  });
+
+  it("removes spaces and tabs from any position", () => {
+    expect(sanitizeHexColorInput(" f f 0\t0 0 0 ")).toBe("ff0000");
   });
 });

@@ -328,6 +328,44 @@ export const isColorDark = (color: string, threshold = 160): boolean => {
 };
 
 // -----------------------------------------------------------------------------
+// hex validation helpers
+// -----------------------------------------------------------------------------
+
+const HEX_COLOR_CHARS = /^[0-9a-f]+$/i;
+
+export const sanitizeHexColorInput = (color: string) =>
+  color.replace(/[#\s]+/g, "");
+
+export type HexColorValidationError =
+  | "invalidLength"
+  | "invalidCharacters"
+  | "invalidColor";
+
+export const getHexColorValidationError = (
+  color: string,
+): HexColorValidationError | null => {
+  const hex = sanitizeHexColorInput(color);
+  if (!hex) {
+    return null;
+  }
+
+  if (
+    hex.length !== 3 &&
+    hex.length !== 4 &&
+    hex.length !== 6 &&
+    hex.length !== 8
+  ) {
+    return "invalidLength";
+  }
+
+  if (!HEX_COLOR_CHARS.test(hex)) {
+    return "invalidCharacters";
+  }
+
+  return tinycolor(`#${hex}`).isValid() ? null : "invalidColor";
+};
+
+// -----------------------------------------------------------------------------
 // normalization
 // -----------------------------------------------------------------------------
 
